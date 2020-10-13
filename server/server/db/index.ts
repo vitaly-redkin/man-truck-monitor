@@ -183,6 +183,7 @@ async function populateDemoData(db: sqlite3.Database): Promise<void> {
     )
   `;
 
+  await run(db, 'DELETE FROM vehicle_position', []);
   await run(db, 'DELETE FROM vehicle', []);
 
   vehicles.forEach(async (v) => {

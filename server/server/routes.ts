@@ -1,5 +1,5 @@
 /**
- * Application-wise router.
+ * Application-wide router.
  */
 import { Application } from 'express';
 

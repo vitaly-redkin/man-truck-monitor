@@ -1,29 +1,27 @@
 import * as React from 'react';
 import GoogleMapReact from 'google-map-react';
-import { Row, Col, Button } from 'reactstrap';
+import { Row, Col, Button, Alert } from 'reactstrap';
 import Select from 'react-select';
 
 import { 
   useSafeState as useState,
   useSafeCallback as useCallback 
 } from '../utils/custom-hooks/CustomHooks';
+import { ServiceError } from '../../service/BaseService';
+import { VehicleService } from '../../service/VehicleService';
 import { ValueLabelModel } from '../../models/ValueLabelModel';
+import { VehicleModel } from '../../models/VehicleModel';
+import { VehiclePositionModel } from '../../models/VehiclePositionModel';
 import { PoiModel, PoiTypeEnum } from '../../models/PoiModel';
 import PoiMarker from '../poi-marker/PoiMarker';
 
-import './Main.css';
+import './Map.css';
 
 // Google Maps API key
 const googleMapsApiKeys = {
   key: process.env.REACT_APP_GOOGLE_MAPS_KEY as string,
   libraries: ['places'],
 };
-
-const licensePlates: ValueLabelModel[] = [
-  {value: 1, label: '111-111'},
-  {value: 2, label: '222-222'},
-  {value: 3, label: '333-333'},
-];
 
 // POI types
 const poiTypes: ValueLabelModel[] = [
@@ -41,6 +39,9 @@ const radiuses: ValueLabelModel[] = [
   )
 ];
 
+// The number of the last vehicle route positions to fetch
+const routeStepCount: number = 10;
+
 /**
  * Interface for the ApiLoaded callback of the Google Maps component
  */
@@ -57,13 +58,15 @@ const defaultCenter: GoogleMapReact.Coords = {lat: 38.7197108, lng: -9.1569673,}
  * The main component (to contain everything else).
  */
 function Main(): JSX.Element {
-  const [center] = useState<GoogleMapReact.Coords>(defaultCenter);
+  const [error, setError] = useState<string>('');
+  const [center, setCenter] = useState<GoogleMapReact.Coords>(defaultCenter);
 
   // Was not able to find type for google.maps ;-(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [maps, setMaps] = useState<any | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);  
 
+  const [licensePlates, setLicensePlates] = useState<ValueLabelModel[]>([]);
   const [licensePlate, setLicensePlate] = useState<ValueLabelModel | null>(null);
   const [poiType, setPoiType] = useState<ValueLabelModel>(poiTypes.find(i => i.value === PoiTypeEnum.All)!);
   const [radius, setRadius] = useState<ValueLabelModel | null>(null);
@@ -75,47 +78,59 @@ function Main(): JSX.Element {
   const routeRef = React.useRef<google.maps.DirectionsRenderer | null>(null);
 
   /**
-   * License plate change handler.
+   * API error handler.
    * 
-   * @param selectedOption selected license plate option
+   * @param e API error
    */
-  const changeLicensePlate = useCallback(
-    (selectedOption: ValueLabelModel): void => {
-      setLicensePlate(selectedOption);
+  const onError = useCallback(
+    (e: ServiceError): void => {
+      console.log(e);
+      setError(e.message);
+    },
+    []
+  );
 
-      // To DO - call API to get vehicle info
-      const vehiclePath: GoogleMapReact.Coords[] = [];
-      for (let i = 0; i < 10; i++) {
-        vehiclePath.push({
-          lat: defaultCenter.lat + i * 0.001,          
-          lng: defaultCenter.lng + i * 0.001,
-        });
-      }
+  /**
+   * Handler for the vehicle list fetch success.flex-end
+   * 
+   * @param result API call result
+   */
+  const onFetchVehicleSuccess = useCallback(
+    (result: VehicleModel[]): void => {
+      setLicensePlates(
+        result.map(r => ({value: r.id, label: r.licensePlate}))
+      );
+    },
+    []
+  );
+
+  /**
+   * Called when component is mounted to fetch license plates.
+   */
+  React.useEffect(
+    (): void => {
+      new VehicleService().fetchVehicles(
+        onFetchVehicleSuccess,
+        onError,
+      );
+    },
+    [onError, onFetchVehicleSuccess]
+  );
+
+
+  /**
+   * Handler for the vehicle list fetch success.flex-end
+   * 
+   * @param result API call result
+   */
+  const onFetchVehicleRouteSuccess = useCallback(
+    (result: VehiclePositionModel[]): void => {
+      const vehiclePath: GoogleMapReact.Coords[] = 
+        result.map(r => ({lat: r.lat, lng: r.lng}));
       setVehiclePath(vehiclePath);
-    },
-    []
-  );
-
-  /**
-   * POI Type change event handler.
-   * 
-   * @param selectedOption selected POI type option
-   */
-  const changePoiType = useCallback(
-    (selectedOption: ValueLabelModel): void => {
-      setPoiType(selectedOption);
-    },
-    []
-  );
-
-  /**
-   * Radius change event handler.
-   * 
-   * @param selectedOption selected POI type option
-   */
-  const changeRadius = useCallback(
-    (selectedOption: ValueLabelModel): void => {
-      setRadius(selectedOption);
+      if (vehiclePath.length) {
+        setCenter(vehiclePath[0]);
+      }
     },
     []
   );
@@ -144,16 +159,14 @@ function Main(): JSX.Element {
       route,
       (result: google.maps.DirectionsResult, status: google.maps.DirectionsStatus): void => {
         if (status !== google.maps.DirectionsStatus.OK) {
-          // Better error handling required
-          console.log('Directions request failed due to ' + status);
+          setError('Directions request failed due to ' + status);
           return;
         } else {
           directionsRenderer.setDirections(result);
           // Tutorial says to use the first leg...
           const directionsData = result.routes[0].legs[0]; 
           if (!directionsData) {
-            // Better error handling required
-            console.log('Directions request failed');
+            setError('Directions request failed');
             return;
           } else {
             setSelectedPoiRoute({distance: directionsData.distance.text, duration: directionsData.duration.text})
@@ -175,6 +188,52 @@ function Main(): JSX.Element {
       if (routeRef.current) {
         routeRef.current.setMap(null);
       }
+    },
+    []
+  );
+
+  /**
+   * License plate change handler.
+   * 
+   * @param selectedOption selected license plate option
+   */
+  const changeLicensePlate = useCallback(
+    (selectedOption: ValueLabelModel): void => {
+      setLicensePlate(selectedOption);
+      setSelectedPoi(null);
+      setSelectedPoiRoute(null);
+      clearRoute();
+
+      new VehicleService().fetchVehicleRoute(
+        selectedOption.value,
+        routeStepCount,
+        onFetchVehicleRouteSuccess,
+        onError,
+      );
+    },
+    [clearRoute, onError, onFetchVehicleRouteSuccess]
+  );
+
+  /**
+   * POI Type change event handler.
+   * 
+   * @param selectedOption selected POI type option
+   */
+  const changePoiType = useCallback(
+    (selectedOption: ValueLabelModel): void => {
+      setPoiType(selectedOption);
+    },
+    []
+  );
+
+  /**
+   * Radius change event handler.
+   * 
+   * @param selectedOption selected POI type option
+   */
+  const changeRadius = useCallback(
+    (selectedOption: ValueLabelModel): void => {
+      setRadius(selectedOption);
     },
     []
   );
@@ -362,6 +421,22 @@ function Main(): JSX.Element {
     )
   };
 
+
+  /**
+   * Renders a panel with error.
+   */
+  const renderError = (): JSX.Element | null => {
+    if (!error) {
+      return null;
+    }
+
+    return (
+      <div className='error'>
+        <Alert color="danger">{error}</Alert>
+      </div>
+    )
+  };
+
   /**
    * Renders POI markers (selected one is always rendered the last to be on top).
    * push() is used instead of array manipulations because of TS compiler foolishness.
@@ -410,10 +485,12 @@ function Main(): JSX.Element {
       <div className='main'>
         {renderFilters()}
         {renderSelectedPoiProps()}
+        {renderError()}
 
         <GoogleMapReact
           bootstrapURLKeys={googleMapsApiKeys}
           defaultCenter={center}
+          center={center}
           defaultZoom={15}
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={handleApiLoaded}

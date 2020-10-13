@@ -26,6 +26,14 @@
   z-index: 1;
 }
 
+.main .error {
+  position: absolute;
+  top: 90px;
+  left: 20px;
+  width: 800px;
+  z-index: 1;
+}
+
 .main .poi-props .col {
   align-self: center;
 }

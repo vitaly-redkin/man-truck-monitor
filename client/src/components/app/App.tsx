@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 
 import ErrorPage from '../error-page/ErrorPage';
-import Main from '../main/Main';
+import Map from '../map/Map';
 
 /**
  * Compomnent own props.
@@ -63,7 +63,7 @@ class App extends React.PureComponent<IOwnProps, IOwnState> {
 
     return (
       <Suspense fallback={null}>
-        <Main />
+        <Map />
       </Suspense>
     );
   }
