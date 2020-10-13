@@ -1,0 +1,56 @@
+openapi: 3.0.1
+info:
+  title: server
+  description: MAN Truck Monitor Server
+  version: 1.0.0
+servers:
+- url: /api/v1
+tags:
+- name: vehicles
+  description: Vehicles endpoints
+- name: Specification
+  description: The swagger API specification
+paths:
+  /vehicle:
+    get:
+      tags:
+      - vehicles
+      description: Returns the list of "registered" vehicles
+      responses:
+        200:
+          description: Returns the list of "registered" vehicles
+          content: {}
+  /vehicle/{id}:
+    get:
+      tags:
+      - vehicles
+      parameters:
+      - name: id
+        in: path
+        description: ID of the vehicle to return the data for
+        required: true
+        schema:
+          type: integer
+        example: 1
+      - name: step_no
+        in: query
+        description: number of the last positions to return
+        required: true
+        schema:
+          type: integer
+        example: 10
+      responses:
+        200:
+          description: Returns the N last positions of the vehicle with the given I
+          content: {}
+        404:
+          description: vehicle positions not found
+          content: {}
+  /spec:
+    get:
+      tags:
+      - Specification
+      responses:
+        200:
+          description: Return the API specification
+          content: {}
