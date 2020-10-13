@@ -19,7 +19,17 @@ paths:
       responses:
         200:
           description: Returns the list of "registered" vehicles
-          content: {}
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    licensePlate:
+                      type: string
   /vehicle/{id}:
     get:
       tags:
@@ -42,7 +52,23 @@ paths:
       responses:
         200:
           description: Returns the N last positions of the vehicle with the given I
-          content: {}
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    vehicleId:
+                      type: integer
+                    recordedAt:
+                      type: string
+                    lat:
+                      type: number
+                    lng:
+                      type: number
         404:
           description: vehicle positions not found
           content: {}
