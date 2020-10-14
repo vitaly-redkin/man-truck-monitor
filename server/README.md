@@ -1,6 +1,6 @@
-# MAN Truck Node Server
+# MAN Truck Monitor Server
 
-MAN Truck Node Server
+MAN Truck Monitor Server
 
 ## Quick Start
 
@@ -43,5 +43,4 @@ Also there is somewhat primitive and excessive (error) logging used - in the rea
 Input validation is done by the Open API using the ```api.yml``` file.
 
 ## Configuration
-```.env``` file (not added to Git) and ```end.examlr``` file (the template to create a real one).
-
+```.env``` file (not added to Git) and ```.env.example``` file (the template to create a real one). Before running the applicationjust copy the ```env.example``` to ```.env``.

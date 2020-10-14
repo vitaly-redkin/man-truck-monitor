@@ -1,44 +1,44 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# MAN Truck Monitor Client
 
-## Available Scripts
+MAN Truck Monitor Client
 
-In the project directory, you can run:
+## Quick Start
 
-### `yarn start`
+```shell
+# install deps
+yarn install
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# run in development mode
+yarn start
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+# build
+yarn build
+```
 
-### `yarn test`
+---
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## General Information
+The application has been created with the [Create React App](https://github.com/facebook/create-react-app).
+The application uses Typescript as a language and google-map-react component as a React Google Maps wrapper. 
+It also uses reactstrap (a Bootstrap wrapper) and react-select component for the dropdowns.
 
-### `yarn build`
+## Try It
+Open you're browser to [http://localhost:3000](http://localhost:3000)
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Notes About Code
+I tried not to overengneer the code. In the real life, when the funcionality would be much more complex, I would probably break the "main" component (Map) into several ones (the Google Map wrapper itself, the filter palel, the info panel, POIs and vehicle route) and use Redux to pass properties (and to update the shared state). But for the scope of the code challenge the code structure is "good enough".
+Some pieces of the code may seem redundant (custom hooks, services) but I just borrowed them from my own toolkit with minor modifications.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+## Testing
+It would be quite hard to change the code to add UI unit tests and make them meaningful - in fact we would test the Google Maps API responses (which are subject to change without notice).
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Configuration
+```.env``` file (not added to Git) and ```.env.example``` file (the template to create a real one). Before running the applicationjust copy the ```env.example``` to ```.env`` and set the Google Maps API key to your one (but please ensure Places API, Maps Javascript API and Directions API are enabled).
 
-### `yarn eject`
+## Design Considerations
+I tried to follow the design directions provided in the task descriptions but I made one concession: instead of connecting the vehicle last position with the selected POI with the arrow I show the Google Maps route and also show the POI name and route distance and duration in a separate panel.
+There are two reasons for this:
+* Truck driver is not a bird:-) He can't fly directly from his truck to the POI, so the driving distance and duration are more important than the direct distance.
+* I probably have choosen a wrong Google Maps React wrapper - being fulled with the GitHub stars. It does the good job allowing me to create my own components over the map - but does not allow me to play with their z-order to show the arrow on top of POIs.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+I also would prefer to not show the filter and info panels over the map (they sometimes hide the important map details) but it was in the requirements.
