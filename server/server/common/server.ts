@@ -4,7 +4,9 @@ import bodyParser from 'body-parser';
 import http from 'http';
 import os from 'os';
 import cookieParser from 'cookie-parser';
-import l from './logger';
+import cors from 'cors';
+
+import L from './logger';
 
 import installValidator from './openapi';
 
@@ -29,6 +31,7 @@ export default class ExpressServer {
     app.use(bodyParser.text({ limit: process.env.REQUEST_LIMIT || '100kb' }));
     app.use(cookieParser(process.env.SESSION_SECRET));
     app.use(express.static(`${root}/public`));
+    app.use(cors());
   }
 
   router(routes: (app: Application) => void): ExpressServer {
@@ -38,7 +41,7 @@ export default class ExpressServer {
 
   listen(port: number): Application {
     const welcome = (p: number) => (): void =>
-      l.info(
+      L.info(
         `up and running in ${
           process.env.NODE_ENV || 'development'
         } @: ${os.hostname()} on port: ${p}}`
@@ -49,7 +52,7 @@ export default class ExpressServer {
         http.createServer(app).listen(port, welcome(port));
       })
       .catch((e) => {
-        l.error(e);
+        L.error(e);
         exit(1);
       });
 

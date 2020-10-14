@@ -75,6 +75,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:3001/api/v1",
   "author": "Vitaly Redkin <v21267@gmail.com> (https://github.com/vitaly-redkin)"
 }

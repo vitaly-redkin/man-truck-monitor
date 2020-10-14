@@ -53,7 +53,7 @@ export class BaseService {
         onSuccess: SuccessHandler<TResult>,
         onError: ErrorHandler,
     ): void {
-        const url = `${endpoint}`;
+        const url: string = `${this.getApiHost()}${endpoint}`;
         try {
             fetch(
                 url,
@@ -107,6 +107,13 @@ export class BaseService {
                 onError(new ServiceError(error.message));
             }
         }
+    }
+
+    /**
+     * Returns API host to add to the endpoint names.
+     */
+    public getApiHost(): string {
+        return process.env.REACT_APP_API_HOST!;
     }
 }
 /**

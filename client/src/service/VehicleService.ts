@@ -5,7 +5,7 @@ import { VehiclePositionModel } from '../models/VehiclePositionModel';
 /**
  * Vehicle endpoints common prefix.
  */
-const PREFIX = '/vehicle'
+const PREFIX = '/api/v1/vehicle'
 
 /**
  * Class to make vehicle API calls.

@@ -136,7 +136,7 @@ function Main(): JSX.Element {
   );
 
   /**
-   * Adds Google Map route from the vehicle last position to the given POI.
+   * Adds Google Maps route from the vehicle last position to the given POI.
    * 
    * @param poi POI to add the route to
    */
@@ -147,7 +147,7 @@ function Main(): JSX.Element {
       }
 
       const directionsService = new google.maps.DirectionsService();
-      const directionsRenderer = new google.maps.DirectionsRenderer();
+      const directionsRenderer = new google.maps.DirectionsRenderer({preserveViewport: true});
       directionsRenderer.setMap(map);
       const route: google.maps.DirectionsRequest = {
         origin: {lat: vehiclePath[0].lat, lng: vehiclePath[0].lng},
